@@ -43,6 +43,7 @@ defmodule GiteeCli.MixProject do
       {:jason, "~> 1.2"},
       {:burrito, "~> 1.0"},
       {:ucwidth, "~> 0.2"},
+      {:unicode, "~> 1.19"},
       {:httpoison, "~> 2.0"},
       {:table_rex, "~> 4.0.0"}
     ]

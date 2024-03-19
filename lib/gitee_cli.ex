@@ -3,4 +3,6 @@ defmodule GiteeCli do
     description: "Gitee CLI"
 
   command(GiteeCli.Auth)
+  command(GiteeCli.Pulls)
+  command(GiteeCli.Enterprises)
 end
