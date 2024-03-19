@@ -8,7 +8,8 @@ defmodule GiteeCli.MixProject do
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: escript()
+      escript: escript(),
+      releases: releases()
     ]
   end
 
@@ -19,12 +20,28 @@ defmodule GiteeCli.MixProject do
     ]
   end
 
+  def releases do
+    [
+      gitee_cli: [
+        steps: [:assemble, &Burrito.wrap/1],
+        burrito: [
+          targets: [
+            macos: [os: :darwin, cpu: :x86_64],
+            linux: [os: :linux, cpu: :x86_64],
+            windows: [os: :windows, cpu: :x86_64]
+          ]
+        ]
+      ]
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:owl, "~> 0.9"},
       {:do_it, "~> 0.6"},
       {:jason, "~> 1.2"},
+      {:burrito, "~> 1.0"},
       {:ucwidth, "~> 0.2"},
       {:httpoison, "~> 2.0"},
       {:table_rex, "~> 4.0.0"}
