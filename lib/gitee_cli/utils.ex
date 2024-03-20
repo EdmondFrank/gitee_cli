@@ -21,7 +21,18 @@ defmodule GiteeCli.Utils do
     |> IO.iodata_to_binary()
   end
 
-  def try_convert_value_of_map_to_string(map) do
-    Map.new(map, fn {key, value} -> {key, to_string(value)} end)
+  def try_convert_value_of_map_to_string(map, mappings \\ %{}) do
+    Map.new(map, fn {key, value} ->
+      cond  do
+        is_map(map[key]) ->
+          first_value =
+            Enum.map(mappings[key], &(get_in(map[key], &1)))
+            |> Enum.filter(& &1)
+            |> List.first
+          {key, to_string(first_value)}
+        true ->
+          {key, to_string(value)}
+      end
+    end)
   end
 end

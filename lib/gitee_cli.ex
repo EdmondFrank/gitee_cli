@@ -4,5 +4,6 @@ defmodule GiteeCli do
 
   command(GiteeCli.Auth)
   command(GiteeCli.Pulls)
+  command(GiteeCli.Issues)
   command(GiteeCli.Enterprises)
 end

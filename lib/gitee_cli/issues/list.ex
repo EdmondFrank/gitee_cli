@@ -1,29 +1,25 @@
-defmodule GiteeCli.Pulls.List do
+defmodule GiteeCli.Issues.List do
   use DoIt.Command,
-    description: "List pull requests"
+    description: "List issues"
 
   import GiteeCli.Utils, only: [message: 2, try_convert_value_of_map_to_string: 2]
 
-  option(:sort, :string, "Sort: (created_at, closed_at, priority, updated_at)", default: "updated_at")
+  option(:state, :string, "Issue states, multiple: (open, closed, rejected, processing)", default: "open,processing")
+  option(:only_related_me, :integer, "Only list tasks associated with authorized users (0: No 1: Yes)", default: 1)
+  option(:filter_child, :integer, "Filter sub tasks (0: no, 1: yes)", default: 0)
+  option(:search, :string, "Search with keyword")
+  option(:sort, :string, "Sort: (created_at, deadline, priority, updated_at)", default: "updated_at")
   option(:direction, :string, "Direction: (asc, desc)", default: "desc")
   option(:page, :integer, "Page", default: 1)
-  option(:per_page, :integer, "Per page", default: 20)
-  option(:search, :string, "Search with keyword")
-  option(:state, :string, "Pulls state: (opened, closed, merged)", default: "opened")
-  option(:scope, :string, "Scope filter: (assigned_or_test, related_to_me, participate_in, draft, create, assign, test)", default: "related_to_me")
+  option(:per_page, :integer, "Per page", default: 30)
 
   @headers %{
     "id" => "id" ,
+    "ident" => "ident",
     "title" => "title",
     "state" => "state",
-    "author" => [["remark"], ["name"]],
-    "project" => [["name"]],
-    "source_branch" => [["branch"]],
-    "target_branch" => [["branch"]],
-    "can_merge" => "can_merge"
+    "assignee" => [["remark"], ["name"]]
   }
-
-  @max_column_width 25
 
   def run(_args, params, %{config: %{"cookie" => cookie, "default_ent_id" => ent_id}}) do
     print_list(:cookie, cookie, ent_id, params)
@@ -40,7 +36,7 @@ defmodule GiteeCli.Pulls.List do
 
   def load(auth, value, ent_id, params) do
     case GiteeCat.Client.new(%{auth => value})
-    |> GiteeCat.Pulls.list(ent_id, params) do
+    |> GiteeCat.Issues.list(ent_id, params) do
       {200, %{"data" => pulls}, _response} ->
         {:ok, pulls}
       {_, reason, _response} ->
@@ -50,14 +46,14 @@ defmodule GiteeCli.Pulls.List do
 
   defp print_list(auth, value, ent_id, params) do
     case load(auth, value, ent_id, params) do
-      {:ok, pulls} ->
-        pulls
-        |> Enum.map(fn pull ->
-          pull
+      {:ok, issues} ->
+        issues
+        |> Enum.map(fn issue ->
+          issue
           |> Map.take(Map.keys(@headers))
           |> try_convert_value_of_map_to_string(@headers)
         end)
-        |> Owl.Table.new(border_style: :none, padding_x: 1, max_column_widths: fn _ -> @max_column_width end, truncate_lines: true)
+        |> Owl.Table.new(border_style: :none, padding_x: 1)
         |> to_string()
         |> IO.puts()
       {:error, reason} ->
