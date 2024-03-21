@@ -4,12 +4,12 @@ defmodule GiteeCli.Issues.List do
 
   import GiteeCli.Utils, only: [message: 2, try_convert_value_of_map_to_string: 2]
 
-  option(:state, :string, "Issue states, multiple: (open, closed, rejected, processing)", default: "open,processing")
-  option(:only_related_me, :integer, "Only list tasks associated with authorized users (0: No 1: Yes)", default: 1)
-  option(:filter_child, :integer, "Filter sub tasks (0: no, 1: yes)", default: 0)
+  option(:state, :string, "Filter by states, multiple", default: "open", allowed_values: ["open", "closed", "rejected", "processing"], keep: true)
+  option(:only_related_me, :integer, "Is only related with me (0: no 1: yes)", default: 1, allowed_values: [0, 1])
+  option(:filter_child, :integer, "Is show subtasks (0: no, 1: yes)", default: 0, allowed_values: [0, 1])
   option(:search, :string, "Search with keyword")
-  option(:sort, :string, "Sort: (created_at, deadline, priority, updated_at)", default: "updated_at")
-  option(:direction, :string, "Direction: (asc, desc)", default: "desc")
+  option(:sort, :string, "Sort", default: "updated_at", allowed_values: ["created_at", "deadline", "priority", "updated_at"])
+  option(:direction, :string, "Sort direction", default: "desc", allowed_values: ["asc", "desc"])
   option(:page, :integer, "Page", default: 1)
   option(:per_page, :integer, "Per page", default: 30)
 
@@ -20,6 +20,10 @@ defmodule GiteeCli.Issues.List do
     "state" => "state",
     "assignee" => [["remark"], ["name"]]
   }
+
+  def run(args, %{state: state} = params, context) when is_list(state) do
+    run(args, %{params | state: Enum.join(state, ",")}, context)
+  end
 
   def run(_args, params, %{config: %{"cookie" => cookie, "default_ent_id" => ent_id}}) do
     print_list(:cookie, cookie, ent_id, params)
@@ -37,8 +41,8 @@ defmodule GiteeCli.Issues.List do
   def load(auth, value, ent_id, params) do
     case GiteeCat.Client.new(%{auth => value})
     |> GiteeCat.Issues.list(ent_id, params) do
-      {200, %{"data" => pulls}, _response} ->
-        {:ok, pulls}
+      {200, %{"data" => data}, _response} ->
+        {:ok, data}
       {_, reason, _response} ->
         {:error, reason}
     end

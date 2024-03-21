@@ -1,6 +1,6 @@
 defmodule GiteeCli.Issues do
   use DoIt.Command,
-    description: "issue related commands"
+    description: "Issues manage"
 
   subcommand(GiteeCli.Issues.List)
 end

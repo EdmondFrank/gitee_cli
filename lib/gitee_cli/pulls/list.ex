@@ -1,16 +1,16 @@
 defmodule GiteeCli.Pulls.List do
   use DoIt.Command,
-    description: "List pull requests"
+    description: "List pulls"
 
   import GiteeCli.Utils, only: [message: 2, try_convert_value_of_map_to_string: 2]
 
-  option(:sort, :string, "Sort: (created_at, closed_at, priority, updated_at)", default: "updated_at")
-  option(:direction, :string, "Direction: (asc, desc)", default: "desc")
+  option(:sort, :string, "Sort", default: "updated_at", allowed_values: ["created_at", "closed_at", "priority", "updated_at"])
+  option(:direction, :string, "Sort direction", default: "desc", allowed_values: ["asc", "desc"])
   option(:page, :integer, "Page", default: 1)
   option(:per_page, :integer, "Per page", default: 20)
   option(:search, :string, "Search with keyword")
-  option(:state, :string, "Pulls state: (opened, closed, merged)", default: "opened")
-  option(:scope, :string, "Scope filter: (assigned_or_test, related_to_me, participate_in, draft, create, assign, test)", default: "related_to_me")
+  option(:state, :string, "Filter by state", default: "opened", allowed_values: ["opened", "closed", "merged"])
+  option(:scope, :string, "Filter by scope", default: "related_to_me", allowed_values: ["assigned_or_test", "related_to_me", "participate_in", "draft", "create","assign", "test"])
 
   @headers %{
     "id" => "id" ,
@@ -41,8 +41,8 @@ defmodule GiteeCli.Pulls.List do
   def load(auth, value, ent_id, params) do
     case GiteeCat.Client.new(%{auth => value})
     |> GiteeCat.Pulls.list(ent_id, params) do
-      {200, %{"data" => pulls}, _response} ->
-        {:ok, pulls}
+      {200, %{"data" => data}, _response} ->
+        {:ok, data}
       {_, reason, _response} ->
         {:error, reason}
     end

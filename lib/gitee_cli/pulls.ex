@@ -1,6 +1,6 @@
 defmodule GiteeCli.Pulls do
   use DoIt.Command,
-    description: "pull request related commands"
+    description: "Pulls manage"
 
   subcommand(GiteeCli.Pulls.List)
 end

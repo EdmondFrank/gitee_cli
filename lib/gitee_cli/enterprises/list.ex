@@ -4,6 +4,11 @@ defmodule GiteeCli.Enterprises.List do
 
   import GiteeCli.Utils, only: [message: 2, try_convert_value_of_map_to_string: 1]
 
+  option(:sort, :string, "Sort", default: "updated_at", allowed_values: ["created_at", "deadline", "priority", "updated_at"])
+  option(:direction, :string, "Sort direction", default: "desc", allowed_values: ["asc", "desc"])
+  option(:page, :integer, "Page", default: 1)
+  option(:per_page, :integer, "Per page", default: 30)
+
   @headers ["id", "name", "path"]
 
   def run(_args, params, %{config: %{"cookie" => cookie}}) do
@@ -17,8 +22,8 @@ defmodule GiteeCli.Enterprises.List do
   def load(auth, value, params) do
     case GiteeCat.Client.new(%{auth => value})
     |> GiteeCat.Enterprises.list(params) do
-      {200, %{"data" => ents}, _response} ->
-        {:ok, ents}
+      {200, %{"data" => data}, _response} ->
+        {:ok, data}
       {_, reason, _response} ->
         {:error, reason}
     end
