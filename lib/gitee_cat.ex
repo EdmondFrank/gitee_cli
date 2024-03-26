@@ -3,7 +3,7 @@ defmodule GiteeCat do
   alias GiteeCat.Client
   alias Jason
 
-  @user_agent [{"User-agent", "gitee-cat"}]
+  @user_agent [{"User-agent", "gitee-cat"}, {"Content-Type", "application/json;charset=UTF-8"}]
 
   @type response ::
           {:ok, term, HTTPoison.Response.t()}

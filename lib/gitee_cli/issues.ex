@@ -3,4 +3,5 @@ defmodule GiteeCli.Issues do
     description: "Issues manage"
 
   subcommand(GiteeCli.Issues.List)
+  subcommand(GiteeCli.Issues.Create)
 end
