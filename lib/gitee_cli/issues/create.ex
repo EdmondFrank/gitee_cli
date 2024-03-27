@@ -15,7 +15,7 @@ defmodule GiteeCli.Issues.Create do
   option(:title, :string, "Issue title", alias: :t)
   option(:description, :string, "Issue description", alias: :d)
   option(:assignee_id, :integer, "Issue assignee", alias: :a)
-  option(:collaborator_ids, :integer, "Issue assignee", alias: :c, keep: true)
+  option(:collaborator_ids, :integer, "Issue Collaborators", alias: :c, keep: true)
   option(:issue_type_id, :integer, "Issue type", alias: :i)
   option(:parent, :string, "Associate parent task by keywords", alias: :p)
   option(:skip_desc, :boolean, "Skip issue description", alias: :s)
@@ -87,7 +87,7 @@ defmodule GiteeCli.Issues.Create do
 
   defp attach_desc(params) do
     unless params[:skip_desc] do
-      desc = Owl.IO.open_in_editor(params[:description], "alacritty -e vim")
+      desc = Owl.IO.open_in_editor(to_string(params[:description]), System.get_env("EDITOR", "emacsclient -c"))
       Map.put(params, :description, desc)
     else
       Map.delete(params, :skip_desc)

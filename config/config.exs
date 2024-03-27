@@ -5,3 +5,9 @@ config :do_it, DoIt.Commfig,
   filename: "config.json"
 
 config :elixir, ansi_enabled: true
+
+config :clipboard,
+  unix: [
+    copy: {"xsel", ["-i"]},
+    paste: {"timeout", ["2", "xclip", "-se", "c", "-t", "image/png", "-o"]}
+  ]
