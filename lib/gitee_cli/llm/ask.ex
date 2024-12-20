@@ -9,6 +9,8 @@ defmodule GiteeCli.Llm.Ask do
   alias GiteeCli.Llm.Functions
   import GiteeCli.Utils, only: [message: 2]
 
+  @mdcat_command "mdcat"
+
   argument(:user_message, :string, "User message")
 
   def run(%{user_message: user_message}, params, %{
@@ -33,12 +35,14 @@ defmodule GiteeCli.Llm.Ask do
       verbose: false
     }
 
+    mdcat_render = System.find_executable(@mdcat_command)
+
     initial_chain =
       LLMChain.new!(llm_chain)
       |> LLMChain.add_messages(initial_messages)
       |> LLMChain.add_tools([Functions.get_user_issues()])
 
-    conversation_loop(initial_chain)
+    conversation_loop(initial_chain, mdcat_render)
   end
 
   def run(_, _, context) do
@@ -46,15 +50,16 @@ defmodule GiteeCli.Llm.Ask do
     help(context)
   end
 
-  defp conversation_loop(llm_chain) do
+  defp conversation_loop(llm_chain, mdcat_render)  do
     case LLMChain.run(llm_chain, mode: :while_needs_response) do
       {:ok, updated_chain} ->
         {:ok, result} = updated_chain |> ChainResult.to_string()
         # AI message in green
-        render_message(result, :green)
+        render_message(result, mdcat_render)
 
         conversation_loop(
-          LLMChain.add_message(updated_chain, Message.new_user!(get_user_input()))
+          LLMChain.add_message(updated_chain, Message.new_user!(get_user_input())),
+          mdcat_render
         )
 
       _other ->
@@ -70,9 +75,16 @@ defmodule GiteeCli.Llm.Ask do
     |> String.trim()
   end
 
-  defp render_message(message, color) do
+  defp render_message(message, nil) do
     message
-    |> Owl.Data.tag(color)
+    |> Owl.Data.tag(:green)
+    |> Owl.IO.puts()
+  end
+
+  defp render_message(message, mdcat) do
+    System.cmd("sh", ["-c", "-l", "echo '#{message}' | #{mdcat}"])
+    |> elem(0)
+    |> Owl.Data.tag(:green)
     |> Owl.IO.puts()
   end
 end
