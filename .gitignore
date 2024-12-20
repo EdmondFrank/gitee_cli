@@ -27,3 +27,5 @@ gitee_cli-*.tar
 
 # Emacs Temoporary files for undo.
 *.~undo-tree~
+.aider*
+.env

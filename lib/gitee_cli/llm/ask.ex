@@ -4,6 +4,7 @@ defmodule GiteeCli.Llm.Ask do
 
   alias LangChain.Message
   alias LangChain.Chains.LLMChain
+  alias LangChain.Utils.ChainResult
   alias LangChain.ChatModels.ChatOpenAI
   alias GiteeCli.Llm.Functions
   import GiteeCli.Utils, only: [message: 2]
@@ -19,7 +20,7 @@ defmodule GiteeCli.Llm.Ask do
       }) do
     Application.put_env(:langchain, :openai_key, api_key)
 
-    messages = [
+    initial_messages = [
       Message.new_system!("""
       You are a helpful AI assistant, proficient in using existing tools to help users solve problems and meet their needs.
       """),
@@ -32,14 +33,31 @@ defmodule GiteeCli.Llm.Ask do
       verbose: false
     }
 
-    case LLMChain.new!(llm_chain)
-         |> LLMChain.add_messages(messages)
-         |> LLMChain.add_tools([Functions.get_user_issues()])
-         |> LLMChain.run(mode: :while_needs_response) do
-      {:ok, %{last_message: %{content: content}}} ->
-        IO.puts(content)
+    initial_chain =
+      LLMChain.new!(llm_chain)
+      |> LLMChain.add_messages(initial_messages)
+      |> LLMChain.add_tools([Functions.get_user_issues()])
 
-      reason ->
+    conversation_loop(initial_chain)
+  end
+
+  def run(_, _, context) do
+    message("No available llm config was found, please setup it first", :yellow)
+    help(context)
+  end
+
+  defp conversation_loop(llm_chain) do
+    case LLMChain.run(llm_chain, mode: :while_needs_response) do
+      {:ok, updated_chain} ->
+        {:ok, result} = updated_chain |> ChainResult.to_string()
+        # AI message in green
+        render_message(result, :green)
+
+        conversation_loop(
+          LLMChain.add_message(updated_chain, Message.new_user!(get_user_input()))
+        )
+
+      _other ->
         message(
           "Error occurred when calling the model; please check the availability of the service and the correctness of the token.",
           :red
@@ -47,8 +65,14 @@ defmodule GiteeCli.Llm.Ask do
     end
   end
 
-  def run(_, _, context) do
-    message("No available llm config was found, please setup it first", :yellow)
-    help(context)
+  defp get_user_input do
+    IO.gets("You: ")
+    |> String.trim()
+  end
+
+  defp render_message(message, color) do
+    message
+    |> Owl.Data.tag(color)
+    |> Owl.IO.puts()
   end
 end

@@ -15,6 +15,10 @@ defmodule GiteeCli.Llm.Setup do
     do_setup_llm(params)
   end
 
+  def run(_, params, %{config: %{"llm" => %{"api_key" => _api_key}}}) do
+    do_setup_llm(params)
+  end
+
   def run(_, _, context) do
     message("No available api_key was found, please set it first", :yellow)
     help(context)
@@ -27,6 +31,12 @@ defmodule GiteeCli.Llm.Setup do
 
   defp do_setup_llm(%{api_base: _api_base, model: _model, api_key: _api_key} = value) do
     DoIt.Commfig.set(@llm, value)
+    message("Update llm configures successfully", :green)
+  end
+
+  defp do_setup_llm(params) do
+    config = DoIt.Commfig.get(@llm)
+    DoIt.Commfig.set(@llm, Map.merge(params, config))
     message("Update llm configures successfully", :green)
   end
 end
