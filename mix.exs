@@ -46,7 +46,8 @@ defmodule GiteeCli.MixProject do
       {:unicode, "~> 1.19"},
       {:httpoison, "~> 2.0"},
       {:table_rex, "~> 4.0.0"},
-      {:clipboard, ">= 0.0.0"}
+      {:clipboard, ">= 0.0.0"},
+      {:langchain, "~> 0.3.0-rc.0"}
     ]
   end
 

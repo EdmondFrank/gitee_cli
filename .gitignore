@@ -24,3 +24,6 @@ gitee_cli-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Emacs Temoporary files for undo.
+*.~undo-tree~

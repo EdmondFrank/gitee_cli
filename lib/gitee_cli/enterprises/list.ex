@@ -4,7 +4,7 @@ defmodule GiteeCli.Enterprises.List do
 
   import GiteeCli.Utils, only: [message: 2, try_convert_value_of_map_to_string: 1]
 
-  option(:sort, :string, "Sort", default: "updated_at", allowed_values: ["created_at", "deadline", "priority", "updated_at"])
+  option(:sort, :string, "Sort", default: "created_at", allowed_values: ["name", "created_at"])
   option(:direction, :string, "Sort direction", default: "desc", allowed_values: ["asc", "desc"])
   option(:page, :integer, "Page", default: 1)
   option(:per_page, :integer, "Per page", default: 30)
